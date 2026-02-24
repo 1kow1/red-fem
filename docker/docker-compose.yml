@@ -1,0 +1,18 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fem-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fem
+      MYSQL_USER: postgres
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
