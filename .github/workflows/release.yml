@@ -12,14 +12,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: "lts/*"
 
       - name: Debug Node
         run: |
           node -v
-          node -e "if (!process.version.startsWith('v22')) { process.exit(1) }"
 
       - name: Install deps
         run: npm ci
