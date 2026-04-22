@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('password');
             $table->string('crm')->nullable();
-
+            $table->string('telefone');
             $table->enum('cargo', [
                 'ADMIN',
                 'SECRETARIA',
