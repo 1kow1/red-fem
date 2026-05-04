@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/1kow1/red-fem/compare/v1.0.0...v1.1.0) (2026-05-04)
+
+
+### Features
+
+* Form logic has been implemented ([9849b58](https://github.com/1kow1/red-fem/commit/9849b58e82c944f1df471822f432a020ff21f12e))
+
 # 1.0.0 (2026-04-22)
 
 
