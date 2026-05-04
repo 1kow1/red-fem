@@ -25,16 +25,25 @@ class FormularioController extends Controller
     {
         $result = $service->listar($request);
 
-        return response()->json($result);
+        return response()->json($result, 200);
     }
 
     public function liberar(int $id, FormularioService $service)
     {
         $request->validate([
-            'liberado_para_uso' => 'required|boolean'
+            'liberadoParaUso' => 'required|boolean'
         ]);
-        $form = $service->liberarParaUso($id, $request->boolean('liberadoParaUso'));
+
+        $liberar = $request->boolean('liberadoParaUso');
+        $form = $service->liberarParaUso($id, $liberar);
 
         return response()->json($form, 200);
+    }
+
+    public function buscar(Request $request, FormularioService $service)
+    {
+        $result = $service->filtrar($request);
+
+        return response()->json($result);
     }
 }

@@ -63,6 +63,10 @@ class FormularioService
 
         $query = Formulario::query();
 
+        if ($user->cargo !== 'ADMIN') {
+            $query->where('ativo', true);
+        }
+
         if ($request->filled('especialidade')) {
             $query->where('especialidade', $request->get('especialidade'));
         }
@@ -71,14 +75,21 @@ class FormularioService
             $query->where('ativo', $request->boolean('ativo'));
         }
 
+        $query->select([
+            'id',
+            'titulo',
+            'especialidade',
+            'versao',
+            'ativo',
+            'liberado_para_uso',
+            'created_at'
+        ]);
+
         $query->orderByDesc('created_at');
 
-        $perPage = (int) $request->get('per_page', 10);
-        $page = (int) $request->get('page', 1);
+        $perPage = max(1, min((int) $request->get('per_page', 10), 100));
 
-        $perPage = min($perPage, 100);
-
-        return $query->paginate($perPage, ['*'], 'page', $page);
+        return $query->paginate($perPage);
     }
 
     public function liberarParaUso(int $id, bool $liberar)
@@ -109,12 +120,15 @@ class FormularioService
             if ($liberar) {
                 Formulario::where('especialidade', $form->especialidade)
                     ->where('liberado_para_uso', true)
+                    ->where('id', '!=', $form->id)
                     ->update(['liberado_para_uso' => false]);
             }
 
-            $form->update([
-                'liberado_para_uso' => $liberar
-            ]);
+            $form
+                ->where()
+                ->update([
+                    'liberado_para_uso' => $liberar
+                ]);
 
             return $form;
         });
@@ -141,6 +155,7 @@ class FormularioService
 
             if ($formAtual) {
                 $formAtual->update(['ativo' => false]);
+                $formAtual->update(['liberado_para_uso' => false]);
             }
 
             $novo = Formulario::create([
@@ -171,5 +186,57 @@ class FormularioService
 
             return $novo;
         });
+    }
+
+    public function filtrar(Request $request)
+    {
+        $query = Formulario::query();
+
+        if ($request->filled('ativo')) {
+            $query->whereIn('ativo', (array) $request->get('ativo'));
+        }
+
+        if ($request->filled('liberado_para_uso')) {
+            $query->whereIn('liberado_para_uso', (array) $request->get('liberado_para_uso'));
+        }
+
+        if ($request->filled('titulo')) {
+            $query->whereIn('titulo', (array) $request->get('titulo'));
+        }
+
+        if ($request->filled('descricao')) {
+            $query->whereIn('descricao', (array) $request->get('descricao'));
+        }
+
+        if ($request->filled('especialidade')) {
+            $query->whereIn('especialidade', (array) $request->get('especialidade'));
+        }
+
+        if ($request->filled('versao')) {
+            $query->whereIn('versao', (array) $request->get('versao'));
+        }
+
+        if ($request->filled('busca')) {
+            $busca = $request->get('busca');
+
+            $query->where(function ($q) use ($busca) {
+                $q
+                    ->where('titulo', 'like', "%{$busca}%")
+                    ->orWhere('descricao', 'like', "%{$busca}%");
+            });
+        }
+
+        if ($request->filled('medico_ids')) {
+            $query->whereIn('medico_id', (array) $request->get('medico_ids'));
+        }
+
+        $sort = $request->get('sort', 'versao');
+        $direction = $request->get('direction', 'desc');
+
+        $query->orderBy($sort, $direction);
+
+        $perPage = max(1, min((int) $request->get('per_page', 10), 100));
+
+        return $query->paginate($perPage);
     }
 }
